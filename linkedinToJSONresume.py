@@ -5,10 +5,7 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
     json_resume['basics'] = dict()
     json_resume['basics']['name'] = linkedin_profile_object['firstName'] + ' ' + linkedin_profile_object['lastName']
     json_resume['basics']['label'] = linkedin_profile_object['headline']
-    if 'displayPictureUrl' in linkedin_profile_object.keys():
-        json_resume['basics']['image'] = linkedin_profile_object['displayPictureUrl'] + linkedin_profile_object['img_200_200']
-    else:
-        json_resume['basics']['image'] = ""
+    json_resume['basics']['image'] = linkedin_profile_object.setdefault('displayPictureUrl', '') + linkedin_profile_object.setdefault('img_200_200', '')
 
     if contact_info['email_address'] is not None:
         json_resume['basics']['email'] = contact_info['email_address']
@@ -23,8 +20,7 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
             json_resume['basics']['website'] = website['url']
             break
 
-    if 'summary' in linkedin_profile_object.keys():
-        json_resume['basics']['summary'] = linkedin_profile_object['summary']
+    json_resume['basics']['summary'] = linkedin_profile_object.setdefault('summary', '')
 
     json_resume['basics']['location'] = dict()
     if 'geoLocationName' in linkedin_profile_object.keys():
@@ -45,8 +41,7 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_exp['company'] = exp['companyName']    # old schema version
         json_exp['name'] = exp['companyName']       # new schema version
         json_exp['position'] = exp['title']
-        if 'locationName' in exp.keys():
-            json_exp['location'] = exp['locationName']
+        json_exp['location'] = exp.setdefault('locationName', '')
         json_exp['startDate'] = str(exp['timePeriod']['startDate']['year']) + '-' + str(exp['timePeriod']['startDate']['month']).zfill(2)
         if 'endDate' in exp['timePeriod'].keys():
             json_exp['endDate'] = str(exp['timePeriod']['endDate']['year']) + '-' + str(exp['timePeriod']['endDate']['month']).zfill(2)
@@ -61,10 +56,8 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
     for edu in linkedin_profile_object['education']:
         json_edu = dict()
         json_edu['institution'] = edu['schoolName']
-        if 'fieldOfStudy' in edu.keys():
-            json_edu['area'] = edu['fieldOfStudy']
-        if 'degreeName' in edu.keys():
-            json_edu['studyType'] = edu['degreeName']
+        json_edu['area'] = edu.setdefault('fieldOfStudy', '')
+        json_edu['studyType'] = edu.setdefault('degreeName', '')
         if 'timePeriod' in edu.keys():
             if 'startDate' in edu['timePeriod'].keys():
                 json_edu['startDate'] = str(edu['timePeriod']['startDate']['year'])
@@ -78,15 +71,13 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
     for vol in linkedin_profile_object['volunteer']:
         json_vol = dict()
         json_vol['organization'] = vol['companyName']
-        if 'role' in vol.keys():
-            json_vol['position'] = vol['role']
+        json_vol['position'] = vol.setdefault('role', '')
         if 'timePeriod' in vol.keys():
             if 'startDate' in vol['timePeriod'].keys():
                 json_vol['startDate'] = str(vol['timePeriod']['startDate']['year'])
             if 'endDate' in vol['timePeriod'].keys():
                 json_vol['endDate'] = str(vol['timePeriod']['endDate']['year'])
-        if 'cause' in vol.keys():
-            json_vol['summary'] = vol['cause'].replace('_', ' ')
+        json_vol['summary'] = vol.setdefault('cause', '').replace('_', ' ')
         if 'description' in vol.keys():
             json_vol['highlights'] = []
             for highlight in vol['description'].split('\n'):
@@ -103,27 +94,22 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
                 json_award['date'] = str(award['issueDate']['year'])
                 if 'month' in award['issueDate'].keys():
                     json_award['date'] = json_award['date'] + '-' + str(award['issueDate']['month']).zfill(2)
-        if 'issuer' in award.keys():
-            json_award['awarder'] = award['issuer']
-        if 'description' in award.keys():
-            json_award['summary'] = award['description']
+        json_award['awarder'] = award.setdefault('issuer', '')
+        json_award['summary'] = award.setdefault('description', '')
         json_resume['awards'].append(json_award)
 
     json_resume['publications'] = []
     for pub in linkedin_profile_object['publications']:
         json_pub = dict()
         json_pub['name'] = pub['name']
-        if 'publisher' in pub.keys():
-            json_pub['publisher'] = pub['publisher']
+        json_pub['publisher'] = pub.setdefault('publisher', '')
         if 'date' in pub.keys():
             if 'year' in pub['date'].keys():
                 json_pub['releaseDate'] = str(pub['date']['year'])
                 if 'month' in pub['date'].keys():
                     json_pub['releaseDate'] = json_pub['releaseDate'] + '-' + str(pub['date']['month']).zfill(2)
-        if 'url' in pub.keys():
-            json_pub['website'] = pub['url']
-        if 'description' in pub.keys():
-            json_pub['summary'] = pub['description']
+        json_pub['website'] = pub.setdefault('url', '')
+        json_pub['summary'] = pub.setdefault('description', '')
         json_resume['publications'].append(json_pub)
 
     json_resume['skills'] = []
@@ -155,8 +141,7 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
     for lang in linkedin_profile_object['languages']:
         json_lang = dict()
         json_lang['language'] = lang['name']
-        if 'proficiency' in lang.keys():
-            json_lang['fluency'] = lang['proficiency'].lower().replace('_', ' ')
+        json_lang['fluency'] = lang.setdefault('proficiency', '').lower().replace('_', ' ')
         json_resume['languages'].append(json_lang)
 
     # todo: interests?, references?, birthday?
