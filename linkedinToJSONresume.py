@@ -42,9 +42,9 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_exp['name'] = exp['companyName']       # new schema version
         json_exp['position'] = exp['title']
         json_exp['location'] = exp.setdefault('locationName', '')
-        json_exp['startDate'] = str(exp['timePeriod']['startDate']['year']) + '-' + str(exp['timePeriod']['startDate']['month']).zfill(2)
+        json_exp['startDate'] = str(exp['timePeriod']['startDate']['year']) + '-' + str(exp['timePeriod']['startDate'].get('month', '')).zfill(2)
         if 'endDate' in exp['timePeriod'].keys():
-            json_exp['endDate'] = str(exp['timePeriod']['endDate']['year']) + '-' + str(exp['timePeriod']['endDate']['month']).zfill(2)
+            json_exp['endDate'] = str(exp['timePeriod']['endDate']['year']) + '-' + str(exp['timePeriod']['endDate'].get('month', '')).zfill(2)
         if 'description' in exp.keys():
             json_exp['highlights'] = []
             for highlight in exp['description'].split('\n'):
