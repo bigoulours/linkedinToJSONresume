@@ -23,13 +23,10 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
     json_resume['basics']['summary'] = linkedin_profile_object.setdefault('summary', '')
 
     json_resume['basics']['location'] = dict()
-    if 'geoLocationName' in linkedin_profile_object.keys():
-        json_resume['basics']['location']['city'] = linkedin_profile_object['geoLocationName']
+    json_resume['basics']['location']['city'] = linkedin_profile_object.get('geoLocationName', "")
     if 'location' in linkedin_profile_object.keys() and 'basicLocation' in linkedin_profile_object['location'].keys():
-        if 'postalCode' in linkedin_profile_object['location']['basicLocation'].keys():
-            json_resume['basics']['location']['postalCode'] = linkedin_profile_object['location']['basicLocation']['postalCode']
-        if 'countryCode' in linkedin_profile_object['location']['basicLocation'].keys():
-            json_resume['basics']['location']['countryCode'] = linkedin_profile_object['location']['basicLocation']['countryCode'].upper()
+        json_resume['basics']['location']['postalCode'] = linkedin_profile_object['location']['basicLocation'].get('postalCode', "")
+        json_resume['basics']['location']['countryCode'] = linkedin_profile_object['location']['basicLocation'].get('countryCode', "").upper()
 
 
     # todo add social network profiles (github, twitter, gitlab...) from websites urls
@@ -41,10 +38,16 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_exp['company'] = exp['companyName']    # old schema version
         json_exp['name'] = exp['companyName']       # new schema version
         json_exp['position'] = exp['title']
-        json_exp['location'] = exp.setdefault('locationName', '')
-        json_exp['startDate'] = str(exp['timePeriod']['startDate']['year']) + '-' + str(exp['timePeriod']['startDate'].get('month', '')).zfill(2)
+        json_exp['location'] = exp.get('locationName', '')
+        json_exp['startDate'] = str(exp['timePeriod']['startDate']['year'])
+        if 'month' in exp['timePeriod']['startDate'].keys():
+            json_exp['startDate'] += '-' + str(exp['timePeriod']['startDate']['month']).zfill(2)
         if 'endDate' in exp['timePeriod'].keys():
-            json_exp['endDate'] = str(exp['timePeriod']['endDate']['year']) + '-' + str(exp['timePeriod']['endDate'].get('month', '')).zfill(2)
+            json_exp['endDate'] = str(exp['timePeriod']['endDate'].get('year', "Present"))
+            if 'month' in exp['timePeriod']['endDate'].keys():
+                json_exp['endDate'] += '-' + str(exp['timePeriod']['endDate']['month']).zfill(2)
+        else:
+            json_exp['endDate'] = "Present"
         if 'description' in exp.keys():
             json_exp['highlights'] = []
             for highlight in exp['description'].split('\n'):
@@ -59,10 +62,8 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_edu['area'] = edu.setdefault('fieldOfStudy', '')
         json_edu['studyType'] = edu.setdefault('degreeName', '')
         if 'timePeriod' in edu.keys():
-            if 'startDate' in edu['timePeriod'].keys():
-                json_edu['startDate'] = str(edu['timePeriod']['startDate']['year'])
-            if 'endDate' in edu['timePeriod'].keys():
-                json_edu['endDate'] = str(edu['timePeriod']['endDate']['year'])
+            json_edu['startDate'] = str(edu['timePeriod']['startDate'].get('year', ''))
+            json_edu['endDate'] = str(edu['timePeriod']['endDate'].get('year', "Present"))
         else:
             json_edu['endDate'] = ""
         json_resume['education'].append(json_edu)
@@ -73,10 +74,8 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_vol['organization'] = vol['companyName']
         json_vol['position'] = vol.setdefault('role', '')
         if 'timePeriod' in vol.keys():
-            if 'startDate' in vol['timePeriod'].keys():
-                json_vol['startDate'] = str(vol['timePeriod']['startDate']['year'])
-            if 'endDate' in vol['timePeriod'].keys():
-                json_vol['endDate'] = str(vol['timePeriod']['endDate']['year'])
+            json_vol['startDate'] = str(vol['timePeriod']['startDate'].get('year', ""))
+            json_vol['endDate'] = str(vol['timePeriod']['endDate'].get('year', "Present"))
         json_vol['summary'] = vol.setdefault('cause', '').replace('_', ' ')
         if 'description' in vol.keys():
             json_vol['highlights'] = []
@@ -90,10 +89,9 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_award = dict()
         json_award['title'] = award['title']
         if 'issueDate' in award.keys():
-            if 'year' in award['issueDate'].keys():
-                json_award['date'] = str(award['issueDate']['year'])
-                if 'month' in award['issueDate'].keys():
-                    json_award['date'] = json_award['date'] + '-' + str(award['issueDate']['month']).zfill(2)
+            json_award['date'] = str(award['issueDate'].get('year', ""))
+            if 'month' in award['issueDate'].keys():
+                json_award['date'] += '-' + str(award['issueDate']['month']).zfill(2)
         json_award['awarder'] = award.setdefault('issuer', '')
         json_award['summary'] = award.setdefault('description', '')
         json_resume['awards'].append(json_award)
@@ -104,10 +102,9 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_pub['name'] = pub['name']
         json_pub['publisher'] = pub.setdefault('publisher', '')
         if 'date' in pub.keys():
-            if 'year' in pub['date'].keys():
-                json_pub['releaseDate'] = str(pub['date']['year'])
-                if 'month' in pub['date'].keys():
-                    json_pub['releaseDate'] = json_pub['releaseDate'] + '-' + str(pub['date']['month']).zfill(2)
+            json_pub['releaseDate'] = str(pub['date'].get('year', ""))
+            if 'month' in pub['date'].keys():
+                json_pub['releaseDate'] += '-' + str(pub['date']['month']).zfill(2)
         json_pub['website'] = pub.setdefault('url', '')
         json_pub['summary'] = pub.setdefault('description', '')
         json_resume['publications'].append(json_pub)
@@ -132,7 +129,7 @@ def linkedin_to_json_resume(linkedin_profile_object, linkedin_skills, contact_in
         json_certif['name'] = certif['name']
         json_certif['issuer'] = certif['authority']
         if 'timePeriod' in certif.keys():
-            json_certif['date'] = str(certif['timePeriod']['startDate']['year'])
+            json_certif['date'] = str(certif['timePeriod']['startDate'].get('year', ""))
             if 'month' in certif['timePeriod']['startDate'].keys():
                 json_certif['date'] += "-" + str(certif['timePeriod']['startDate']['month']).zfill(2)
         json_resume['certificates'].append(json_certif)
